@@ -1,0 +1,72 @@
+{
+  "name": "desktop",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "electron/electron-main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "electron": "electron-builder -c.extraMetadata.main=electron/electron-main.cjs",
+    "electron:dev": "concurrently \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:5173 && cross-env NODE_ENV=development electron .\"",
+    "electron:build": "npm run build && npm run electron:build-electron",
+    "electron:build-electron": "electron-builder",
+    "electron:package": "npm run build && npm run electron:build-electron -- --mac --win",
+    "electron:start": "cross-env NODE_ENV=development electron ."
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.0.15",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.21.0",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.0.3",
+    "electron-builder": "^25.1.8",
+    "eslint": "^9.21.0",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "globals": "^15.15.0",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.15",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.24.1",
+    "vite": "^6.2.0",
+    "vite-plugin-electron": "^0.28.8",
+    "vite-plugin-electron-renderer": "^0.14.6",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.yourname.desktop-app",
+    "productName": "Desktop App",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/electron-main.cjs",
+      "electron/preload.cjs"
+    ],
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    }
+  }
+}

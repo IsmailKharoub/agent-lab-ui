@@ -467,44 +467,14 @@ const AgentDetails: React.FC<AgentDetailsProps> = ({
       setIsActionInProgress(true);
       setActionError(null);
 
-      // Direct API call to perform agent action
-      // get apiUrl from local storage
-      const apiUrl = localStorage.getItem("apiUrl");
-      if (!apiUrl) {
-        throw new Error("API URL not found");
-      }
-      const response = await fetch(
-        `${apiUrl}/agents/${agent.id}/${action}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": "development-key",
-          },
-          body: JSON.stringify({ action }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to ${action} agent. Server responded with ${response.status}`
-        );
-      }
-
-      const data = await response.json();
-
-      if (data.status !== "success") {
-        throw new Error(data.message || `Failed to ${action} agent`);
-      }
-
-      // Refresh data after action
-      fetchAllAgentData();
-
-      // Also call the prop callback if needed for parent component updates
+      // Call the prop callback which uses apiService
       const result = await onAgentAction(agent.id, action);
 
       if (!result) {
         setActionError(`Failed to ${action} agent. Please try again.`);
+      } else {
+        // Refresh data after action
+        fetchAllAgentData();
       }
     } catch (err) {
       console.error(`Error during ${action} action:`, err);

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Agent, AgentStatus } from '../types';
+import apiService from '../services/api';
 
 interface AgentListProps {
   agents: Agent[];
@@ -33,29 +34,20 @@ const AgentList: React.FC<AgentListProps> = ({ agents, onViewDetails }) => {
       setIsActionInProgress(prev => ({ ...prev, [agentId]: true }));
       setActionError(null);
       
-      // Direct API call to perform agent action
-      // get apiUrl from local storage  
-      const apiUrl = localStorage.getItem("apiUrl");
-      if (!apiUrl) {
-        throw new Error("API URL not found");
-      }
-      const response = await fetch(`${apiUrl}/agents/${agentId}/${action}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': 'development-key'
-        },
-        body: JSON.stringify({ action })
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} agent. Server responded with ${response.status}`);
-      }
-      
-      const data = await response.json();
-      
-      if (data.status !== 'success') {
-        throw new Error(data.message || `Failed to ${action} agent`);
+      let updatedAgent;
+      switch (action) {
+        case 'start':
+          updatedAgent = await apiService.startAgent(agentId);
+          break;
+        case 'stop':
+          updatedAgent = await apiService.stopAgent(agentId);
+          break;
+        case 'pause':
+          updatedAgent = await apiService.pauseAgent(agentId);
+          break;
+        case 'resume':
+          updatedAgent = await apiService.resumeAgent(agentId);
+          break;
       }
       
     } catch (err) {

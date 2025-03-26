@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Agent, AgentStatus } from '../types';
 import { Link } from 'react-router-dom';
+import apiService from '../services/api';
 
 interface DashboardProps {
   agents: Agent[];
@@ -41,34 +42,28 @@ const Dashboard: React.FC<DashboardProps> = ({ agents, setAgents }) => {
       setIsActionInProgress(prev => ({ ...prev, [agentId]: true }));
       setActionError(null);
 
-      // get apiUrl from local storage
-      const apiUrl = localStorage.getItem("apiUrl");
-      if (!apiUrl) {
-        throw new Error("API URL not found");
+      let updatedAgent;
+      switch (action) {
+        case 'start':
+          updatedAgent = await apiService.startAgent(agentId);
+          break;
+        case 'stop':
+          updatedAgent = await apiService.stopAgent(agentId);
+          break;
+        case 'pause':
+          updatedAgent = await apiService.pauseAgent(agentId);
+          break;
+        case 'resume':
+          updatedAgent = await apiService.resumeAgent(agentId);
+          break;
       }
-      // Direct API call to perform agent action
-      const response = await fetch(`${apiUrl}agents/${agentId}/${action}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': 'development-key'
-        },
-        body: JSON.stringify({ action })
-      });
+
+      // Update the agent in the list
+      const updatedAgents = agents.map((agent: Agent) => 
+        agent.id === agentId ? updatedAgent : agent
+      );
+      setAgents(updatedAgents);
       
-      if (!response.ok) {
-        throw new Error(`Failed to ${action} agent. Server responded with ${response.status}`);
-      }
-      
-      const newData = await response.json();
-      
-      if (newData.status !== 'success') {
-        throw new Error(newData.message || `Failed to ${action} agent`);
-      }
-      // refresh the agents list
-      await fetch(`${apiUrl}/agents`);
-      const data = await response.json();
-      setAgents(data);
     } catch (err) {
       console.error(`Error during ${action} action:`, err);
       setActionError(`An error occurred while trying to ${action} the agent.`);
